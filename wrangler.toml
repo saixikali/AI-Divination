@@ -1,0 +1,9 @@
+name = "fortune-telling"
+compatibility_date = "2024-01-01"
+
+[vars]
+DEEPSEEK_API_KEY = ""
+
+[[assets]]
+directory = "./public"
+binding = "ASSETS"

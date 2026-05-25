@@ -1,0 +1,17 @@
+# 依赖
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 环境变量
+.env
+
+# 本地构建
+*.zip
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
