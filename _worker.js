@@ -822,7 +822,7 @@ const INDEX_HTML = `<!DOCTYPE html>
 
             const guaciBox = document.getElementById('guaciBox');
             if (data.guaci) {
-                guaciBox.innerHTML = `<div class="guaci-label">卦辞</div><div class="guaci-text">${data.guaci}</div>`;
+                guaciBox.innerHTML = '<div ' + 'class="guaci-label">卦辞</div><div ' + 'class="guaci-text">' + data.guaci + '</div>';
             } else {
                 guaciBox.innerHTML = '';
             }
@@ -840,7 +840,11 @@ const INDEX_HTML = `<!DOCTYPE html>
 
             const zhiyaoList = document.getElementById('zhiyaoList');
             if (data.zhiyao && data.zhiyao.length > 0) {
-                zhiyaoList.innerHTML = '<div class="zhiyao-title">爻辞</div>' + data.zhiyao.map(item => `<div class="zhiyao-item">${item}</div>`).join('');
+                var zhiyaoHtml = '<div ' + 'class="zhiyao-title">爻辞</div>';
+                data.zhiyao.forEach(function(item) {
+                    zhiyaoHtml += '<div ' + 'class="zhiyao-item">' + item + '</div>';
+                });
+                zhiyaoList.innerHTML = zhiyaoHtml;
             } else {
                 zhiyaoList.innerHTML = '';
             }
