@@ -617,14 +617,52 @@ const INDEX_HTML = `<!DOCTYPE html>
     <meta name="description" content="易经算命系统，基于DeepSeek AI智能解读卦象">
     <title>易经算命 | 卦象解读</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
-            color: #e8e8e8;
-            line-height: 1.6;
+        :root {
+            --bg-deep: #1a1a2e;
+            --bg-mid: #16213e;
+            --bg-light: #0f3460;
+            --gold: #ffd700;
+            --gold-dim: rgba(255, 215, 0, 0.15);
+            --gold-glow: rgba(255, 215, 0, 0.4);
+            --text-primary: #e8e8e8;
+            --text-secondary: #b0b0b0;
+            --text-muted: #888;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --wuxing-metal: #ffd700;
+            --wuxing-wood: #4caf50;
+            --wuxing-water: #42a5f5;
+            --wuxing-fire: #ef5350;
+            --wuxing-earth: #ff9800;
+            --judge-daji: #66bb6a;
+            --judge-xiong: #ef5350;
+            --judge-ping: #ffa726;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Noto Serif SC", "Songti SC", "SimSun", "STSong", -apple-system, BlinkMacSystemFont, "Segoe UI", serif;
+            background: linear-gradient(170deg, #0d0d1a 0%, #1a1a2e 30%, #16213e 60%, #0f3460 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 60%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(100, 150, 255, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -633,20 +671,35 @@ const INDEX_HTML = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             justify-content: center;
+            position: relative;
+            z-index: 1;
         }
+
+        /* ====== 头部 ====== */
         .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 2rem; color: #ffd700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); margin-bottom: 8px; }
-        .header p { color: #a0a0a0; font-size: 0.9rem; }
+        .header h1 {
+            font-size: 2rem;
+            color: var(--gold);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1);
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+        }
+        .header p { color: var(--text-muted); font-size: 0.9rem; letter-spacing: 2px; }
+
+        /* ====== 卡片通用 ====== */
         .card {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 24px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
         }
+
+        /* ====== 表单 ====== */
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #c0c0c0; font-size: 0.9rem; }
+        .form-group label { display: block; margin-bottom: 8px; color: #c0c0c0; font-size: 0.9rem; letter-spacing: 1px; }
         .form-group input, .form-group textarea {
             width: 100%;
             padding: 14px 16px;
@@ -655,15 +708,17 @@ const INDEX_HTML = `<!DOCTYPE html>
             background: rgba(255, 255, 255, 0.05);
             color: #fff;
             font-size: 1rem;
+            font-family: inherit;
             transition: all 0.3s ease;
         }
         .form-group input:focus, .form-group textarea:focus {
             outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
         }
         .form-group textarea { resize: vertical; min-height: 80px; }
         .form-group input::placeholder, .form-group textarea::placeholder { color: #666; }
+
         .btn {
             width: 100%;
             padding: 16px;
@@ -673,56 +728,259 @@ const INDEX_HTML = `<!DOCTYPE html>
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            letter-spacing: 2px;
+            font-family: inherit;
         }
         .btn-primary {
             background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
             color: #1a1a2e;
         }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3); }
+        .btn-primary:active { transform: translateY(0); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--gold);
+        }
+
+        /* ====== 加载动画 ====== */
+        .loading { display: none; text-align: center; padding: 60px 40px; }
+        .loading.show { display: block; }
+        .loading-bagua { width: 64px; height: 64px; margin: 0 auto 24px; position: relative; }
+        .loading-bagua .ring {
+            position: absolute; inset: 0;
+            border: 3px solid transparent; border-radius: 50%;
+            animation: baguaSpin 3s linear infinite;
+        }
+        .loading-bagua .ring:nth-child(1) { border-top-color: var(--gold); border-right-color: var(--gold); }
+        .loading-bagua .ring:nth-child(2) {
+            inset: 8px;
+            border-bottom-color: rgba(255, 215, 0, 0.5);
+            border-left-color: rgba(255, 215, 0, 0.5);
+            animation-direction: reverse;
+            animation-duration: 2s;
+        }
+        .loading-bagua .center-dot {
+            position: absolute; inset: 50%;
+            width: 8px; height: 8px;
+            background: var(--gold); border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--gold-glow);
+        }
+        @keyframes baguaSpin { to { transform: rotate(360deg); } }
+        .loading p { color: var(--text-secondary); letter-spacing: 2px; animation: fadeText 2s ease-in-out infinite; }
+        @keyframes fadeText { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* ====== 错误提示 ====== */
+        .error {
+            color: #ef5350; text-align: center; padding: 16px;
+            background: rgba(244, 67, 54, 0.1); border: 1px solid rgba(244, 67, 54, 0.2);
+            border-radius: 10px; display: none;
+        }
+        .error.show { display: block; }
+
+        /* ====== 结果区域基类 ====== */
         .result { display: none; }
         .result.show { display: block; }
-        .hexagram-display { text-align: center; margin-bottom: 24px; }
-        .hexagram-symbols { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 16px; }
-        .trigram { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .trigram-symbol { font-size: 3rem; color: #ffd700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
-        .trigram-name { font-size: 1.2rem; color: #e0e0e0; }
-        .trigram-nature { font-size: 0.85rem; color: #888; }
-        .divider { font-size: 2rem; color: rgba(255, 255, 255, 0.3); }
-        .hexagram-lines { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px; }
-        .hexagram-lines .line { display: flex; gap: 4px; }
-        .hexagram-lines .yao { width: 40px; height: 8px; border-radius: 4px; }
-        .hexagram-lines .yao.yang { background: linear-gradient(90deg, #ffd700, #ffaa00); }
-        .hexagram-lines .yao.yin { background: linear-gradient(90deg, #4a4a6a, #3a3a5a); position: relative; }
-        .hexagram-lines .yao.yin::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 2px; background: #1a1a2e; border-radius: 1px; }
-        .hexagram-name-result { font-size: 1.5rem; color: #ffd700; margin: 16px 0 8px; }
-        .hexagram-num { font-size: 0.9rem; color: #888; margin-bottom: 8px; }
-        .judgement { display: inline-block; padding: 4px 16px; border-radius: 20px; font-size: 0.9rem; margin-bottom: 16px; }
-        .judgement.daji { background: rgba(76, 175, 80, 0.2); color: #81c784; border: 1px solid rgba(76, 175, 80, 0.3); }
-        .judgement.xiong { background: rgba(244, 67, 54, 0.2); color: #e57373; border: 1px solid rgba(244, 67, 54, 0.3); }
-        .judgement.ping { background: rgba(255, 193, 7, 0.2); color: #ffd54f; border: 1px solid rgba(255, 193, 7, 0.3); }
-        .guaci-box { background: rgba(255, 215, 0, 0.08); border-left: 3px solid #ffd700; padding: 12px 16px; margin-bottom: 12px; border-radius: 0 8px 8px 0; }
-        .guaci-label { color: #ffd700; font-size: 0.85rem; margin-bottom: 4px; }
-        .guaci-text { color: #d0d0d0; font-style: italic; font-size: 0.9rem; }
-        .meaning { color: #b0b0b0; font-size: 0.95rem; line-height: 1.8; padding: 16px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; margin-bottom: 16px; }
-        .zhiyao-list { margin-bottom: 16px; }
-        .zhiyao-title { color: #ffd700; font-size: 0.95rem; margin-bottom: 10px; }
-        .zhiyao-item { padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; margin-bottom: 6px; font-size: 0.85rem; color: #c0c0c0; }
-        .explanation { color: #d0d0d0; font-size: 0.95rem; line-height: 1.9; padding: 20px; background: rgba(255, 215, 0, 0.05); border-radius: 10px; border-left: 3px solid #ffd700; }
-        .explanation-title { color: #ffd700; font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .loading { display: none; text-align: center; padding: 40px; }
-        .loading.show { display: block; }
-        .loading-spinner { width: 50px; height: 50px; border: 3px solid rgba(255, 215, 0, 0.2); border-top-color: #ffd700; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading p { color: #a0a0a0; }
-        .error { color: #e57373; text-align: center; padding: 16px; background: rgba(244, 67, 54, 0.1); border-radius: 10px; display: none; }
-        .error.show { display: block; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 0.8rem; }
+
+        .result-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .result-card.visible { opacity: 1; transform: translateY(0); }
+
+        /* ====== 1. 卦名头部卡片 ====== */
+        .header-card {
+            text-align: center;
+            padding: 32px 24px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            background: rgba(255, 215, 0, 0.04);
+        }
+        .header-card .pinyin { font-size: 0.95rem; color: var(--text-muted); letter-spacing: 2px; margin-bottom: 8px; font-style: italic; }
+        .header-card .hex-name {
+            font-size: 2.2rem;
+            color: var(--gold);
+            text-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+            margin-bottom: 6px;
+            letter-spacing: 6px;
+        }
+        .header-card .hex-num { font-size: 0.9rem; color: var(--text-muted); letter-spacing: 2px; margin-bottom: 14px; }
+        .judgement-badge {
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        .judgement-badge.daji {
+            background: rgba(76, 175, 80, 0.2); color: var(--judge-daji);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
+        }
+        .judgement-badge.xiong {
+            background: rgba(244, 67, 54, 0.2); color: var(--judge-xiong);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.2);
+        }
+        .judgement-badge.ping {
+            background: rgba(255, 152, 0, 0.2); color: var(--judge-ping);
+            border: 1px solid rgba(255, 152, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.2);
+        }
+        @keyframes glowPulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+
+        /* ====== 2. 八卦详情卡片 ====== */
+        .trigram-detail {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: center;
+            text-align: center;
+        }
+        .trigram-block {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .trigram-block .tri-symbol { font-size: 2.8rem; color: var(--gold); text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); line-height: 1.2; }
+        .trigram-block .tri-name { font-size: 1.4rem; color: var(--text-primary); letter-spacing: 2px; margin: 4px 0; }
+        .trigram-block .tri-info { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+        .trigram-block .tri-info span { display: inline-block; margin: 0 4px; }
+        .wuxing-dot {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+            vertical-align: middle; margin-right: 2px;
+        }
+        .wuxing-dot.metal { background: var(--wuxing-metal); box-shadow: 0 0 6px var(--wuxing-metal); }
+        .wuxing-dot.wood { background: var(--wuxing-wood); box-shadow: 0 0 6px var(--wuxing-wood); }
+        .wuxing-dot.water { background: var(--wuxing-water); box-shadow: 0 0 6px var(--wuxing-water); }
+        .wuxing-dot.fire { background: var(--wuxing-fire); box-shadow: 0 0 6px var(--wuxing-fire); }
+        .wuxing-dot.earth { background: var(--wuxing-earth); box-shadow: 0 0 6px var(--wuxing-earth); }
+
+        .trigram-divider { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .trigram-divider .taiji-icon {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: conic-gradient(from 90deg, #1a1a2e 0% 50%, var(--gold) 50% 100%);
+            position: relative; opacity: 0.7;
+        }
+        .trigram-divider .taiji-icon::after {
+            content: '';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+        .wuxing-relation {
+            font-size: 0.82rem; letter-spacing: 1px; padding: 4px 12px; border-radius: 12px;
+        }
+        .wuxing-relation.sheng { color: #66bb6a; background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.2); }
+        .wuxing-relation.ke { color: #ef5350; background: rgba(244, 67, 54, 0.1); border: 1px solid rgba(244, 67, 54, 0.2); }
+
+        /* ====== 3. 卦象爻线图 ====== */
+        .hexagram-visual { padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .hexagram-visual .section-title { color: var(--gold); font-size: 0.95rem; letter-spacing: 3px; margin-bottom: 12px; text-align: center; }
+        .yao-row { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 320px; }
+        .yao-label { width: 50px; text-align: right; font-size: 0.85rem; color: var(--text-muted); letter-spacing: 1px; flex-shrink: 0; }
+        .yao-line { flex: 1; height: 14px; border-radius: 7px; position: relative; overflow: hidden; }
+        .yao-line.yang {
+            background: linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            animation: drawYang 0.8s ease-out forwards;
+            transform-origin: left center;
+        }
+        .yao-line.yin {
+            display: flex; gap: 16px; justify-content: center; background: transparent;
+        }
+        .yao-line.yin::before,
+        .yao-line.yin::after {
+            content: '';
+            flex: 1;
+            max-width: calc(50% - 14px);
+            height: 14px; border-radius: 7px;
+            background: linear-gradient(90deg, #4a4a6a, #6a6a8a, #4a4a6a);
+            box-shadow: 0 0 6px rgba(100, 100, 160, 0.2);
+            animation: drawYinHalf 0.6s ease-out forwards;
+            transform-origin: left center;
+        }
+        .yao-line.yin::after { animation-delay: 0.1s; }
+        @keyframes drawYang { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+        @keyframes drawYinHalf { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+
+        /* ====== 4. 卦辞象辞卡片 ====== */
+        .guaci-card { border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.04); }
+        .guaci-card .section-label { font-size: 0.8rem; color: var(--gold); letter-spacing: 2px; margin-bottom: 8px; }
+        .guaci-card .guaci-text { font-size: 1.1rem; color: var(--gold); font-style: italic; letter-spacing: 2px; margin-bottom: 12px; line-height: 1.8; }
+        .guaci-card .xiangci-text { font-size: 0.95rem; color: var(--text-secondary); letter-spacing: 1px; line-height: 1.8; }
+        .guaci-card .meaning-text { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.9rem; color: var(--text-muted); line-height: 1.8; }
+
+        /* ====== 5. 爻辞列表卡片 ====== */
+        .yaoci-card .section-title { color: var(--gold); font-size: 0.95rem; letter-spacing: 3px; margin-bottom: 12px; }
+        .yaoci-list { display: flex; flex-direction: column; gap: 4px; }
+        .yaoci-item {
+            display: flex; gap: 12px; padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.02); border-radius: 8px;
+            transition: background 0.2s ease; align-items: baseline;
+        }
+        .yaoci-item:hover { background: rgba(255, 215, 0, 0.05); }
+        .yaoci-item .yaoci-pos { color: var(--gold); font-size: 0.85rem; font-weight: 600; white-space: nowrap; letter-spacing: 1px; min-width: 40px; }
+        .yaoci-item .yaoci-content { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; }
+
+        /* ====== 6. AI解读卡片 ====== */
+        .explanation-card {
+            border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.05);
+            position: relative; overflow: hidden;
+        }
+        .explanation-card::after {
+            content: '\\262F';
+            position: absolute; right: 16px; bottom: 16px;
+            font-size: 4rem; color: rgba(255, 215, 0, 0.04);
+            pointer-events: none; line-height: 1;
+        }
+        .explanation-card .section-title {
+            color: var(--gold); font-size: 1.05rem; letter-spacing: 3px;
+            margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+        }
+        .explanation-card .section-title::before { content: '\\2726'; font-size: 0.8rem; }
+        .explanation-card .section-title::after { content: '\\2726'; font-size: 0.8rem; }
+        .explanation-content { color: #d8d8d8; font-size: 0.95rem; line-height: 2; position: relative; z-index: 1; white-space: pre-wrap; }
+
+        /* ====== 页脚 ====== */
+        .footer { text-align: center; margin-top: 24px; color: #555; font-size: 0.8rem; letter-spacing: 1px; }
+
+        /* ====== 响应式 ====== */
         @media (max-width: 480px) {
-            .container { padding: 16px; }
-            .header h1 { font-size: 1.6rem; }
-            .card { padding: 18px; }
-            .trigram-symbol { font-size: 2.5rem; }
+            .container { padding: 14px; }
+            .header h1 { font-size: 1.6rem; letter-spacing: 2px; }
+            .card, .result-card { padding: 18px; }
+            .header-card { padding: 24px 16px; }
+            .header-card .hex-name { font-size: 1.8rem; letter-spacing: 4px; }
+            .trigram-detail { grid-template-columns: 1fr; gap: 12px; }
+            .trigram-divider { flex-direction: row; }
+            .trigram-divider .taiji-icon { width: 28px; height: 28px; }
+            .trigram-block .tri-symbol { font-size: 2.2rem; }
+            .trigram-block .tri-name { font-size: 1.2rem; }
+            .yao-row { max-width: 100%; }
+            .yao-label { width: 40px; font-size: 0.78rem; }
+            .yao-line { height: 12px; }
+            .yao-line.yin::before,
+            .yao-line.yin::after { height: 12px; max-width: calc(50% - 10px); }
+            .guaci-card .guaci-text { font-size: 1rem; }
+            .explanation-card::after { font-size: 3rem; right: 8px; bottom: 8px; }
         }
     </style>
 </head>
@@ -730,7 +988,7 @@ const INDEX_HTML = `<!DOCTYPE html>
     <div class="container">
         <div class="header">
             <h1>☰ 易经算命 ☷</h1>
-            <p>静心凝神，洞察天机</p>
+            <p>静心凝神 · 洞察天机</p>
         </div>
         <div class="card" id="formCard">
             <form id="fortuneForm">
@@ -746,46 +1004,84 @@ const INDEX_HTML = `<!DOCTYPE html>
                     <label for="birthTime">出生时辰（可选）</label>
                     <input type="text" id="birthTime" name="birthTime" placeholder="例如：子时、卯时">
                 </div>
-                <button type="submit" class="btn btn-primary" id="submitBtn">开始算命</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">开 始 算 命</button>
             </form>
         </div>
         <div class="loading" id="loading">
-            <div class="loading-spinner"></div>
-            <p>大师正在为您解读卦象...</p>
+            <div class="loading-bagua">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="center-dot"></div>
+            </div>
+            <p>大师正在为您起卦解卦...</p>
         </div>
         <div class="error" id="error"></div>
-        <div class="card result" id="result">
-            <div class="hexagram-display">
-                <div class="hexagram-symbols">
-                    <div class="trigram">
-                        <span class="trigram-symbol" id="upperSymbol">☰</span>
-                        <span class="trigram-name" id="upperName">乾</span>
-                        <span class="trigram-nature" id="upperNature">天 · 西北</span>
+        <div class="result" id="result">
+            <div class="result-card header-card" id="resultHeader">
+                <div class="pinyin" id="hexPinyin"></div>
+                <div class="hex-name" id="hexName"></div>
+                <div class="hex-num" id="hexNum"></div>
+                <span class="judgement-badge" id="judgementBadge"></span>
+            </div>
+            <div class="result-card" id="trigramCard">
+                <div class="trigram-detail">
+                    <div class="trigram-block" id="upperTrigramBlock">
+                        <div class="tri-symbol" id="upperSymbol"></div>
+                        <div class="tri-name" id="upperName"></div>
+                        <div class="tri-info" id="upperInfo"></div>
                     </div>
-                    <span class="divider">☰</span>
-                    <div class="trigram">
-                        <span class="trigram-symbol" id="lowerSymbol">☷</span>
-                        <span class="trigram-name" id="lowerName">坤</span>
-                        <span class="trigram-nature" id="lowerNature">地 · 西南</span>
+                    <div class="trigram-divider">
+                        <div class="taiji-icon"></div>
+                        <div class="wuxing-relation" id="wuxingRelation"></div>
+                    </div>
+                    <div class="trigram-block" id="lowerTrigramBlock">
+                        <div class="tri-symbol" id="lowerSymbol"></div>
+                        <div class="tri-name" id="lowerName"></div>
+                        <div class="tri-info" id="lowerInfo"></div>
                     </div>
                 </div>
-                <div class="hexagram-lines" id="hexagramLines"></div>
-                <div class="hexagram-num" id="hexagramNum"></div>
-                <div class="hexagram-name-result" id="hexagramName"></div>
-                <span class="judgement" id="judgement"></span>
-                <div id="guaciBox"></div>
-                <div class="meaning" id="meaning"></div>
-                <div class="zhiyao-list" id="zhiyaoList"></div>
             </div>
-            <div class="explanation">
-                <div class="explanation-title">✦ 大师解读 ✦</div>
-                <div id="explanation"></div>
+            <div class="result-card hexagram-visual" id="hexagramVisual">
+                <div class="section-title">◇ 六 爻 卦 象 ◇</div>
+                <div id="yaoRows"></div>
             </div>
-            <button class="btn btn-primary" onclick="resetForm()" style="margin-top: 20px;">再次算命</button>
+            <div class="result-card guaci-card" id="guaciCard">
+                <div class="section-label">【卦 辞】</div>
+                <div class="guaci-text" id="guaciText"></div>
+                <div class="section-label" style="margin-top:4px;">【象 辞】</div>
+                <div class="xiangci-text" id="xiangciText"></div>
+                <div class="meaning-text" id="meaningText"></div>
+            </div>
+            <div class="result-card yaoci-card" id="yaociCard">
+                <div class="section-title">◇ 六 爻 爻 辞 ◇</div>
+                <div class="yaoci-list" id="yaociList"></div>
+            </div>
+            <div class="result-card explanation-card" id="explanationCard">
+                <div class="section-title">大师解读</div>
+                <div class="explanation-content" id="explanationContent"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="resetForm()" style="margin-top:4px; margin-bottom:20px;">再 次 算 命</button>
         </div>
         <div class="footer"><p>本系统仅供娱乐参考</p></div>
     </div>
     <script>
+        const WUXING_SHENG = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
+        const WUXING_KE = { '木': '土', '土': '水', '水': '火', '火': '金', '金': '木' };
+        const WUXING_COLOR_CLASS = { '金': 'metal', '木': 'wood', '水': 'water', '火': 'fire', '土': 'earth' };
+
+        function getWuxingRelation(el1, el2) {
+            if (WUXING_SHENG[el1] === el2) return { text: el1 + '生' + el2, cls: 'sheng' };
+            if (WUXING_SHENG[el2] === el1) return { text: el2 + '生' + el1, cls: 'sheng' };
+            if (WUXING_KE[el1] === el2) return { text: el1 + '克' + el2, cls: 'ke' };
+            if (WUXING_KE[el2] === el1) return { text: el2 + '克' + el1, cls: 'ke' };
+            return { text: el1 + '比和' + el2, cls: 'sheng' };
+        }
+
+        function getYaoLabels(lines) {
+            const positions = ['初', '二', '三', '四', '五', '上'];
+            return lines.map(function(line, i) { return positions[i] + (line === 1 ? '九' : '六'); });
+        }
+
         const form = document.getElementById('fortuneForm');
         const formCard = document.getElementById('formCard');
         const loading = document.getElementById('loading');
@@ -803,53 +1099,106 @@ const INDEX_HTML = `<!DOCTYPE html>
         function showResult(data) {
             loading.classList.remove('show');
             result.classList.add('show');
+
+            document.getElementById('hexPinyin').textContent = data.pinyin || '';
+            document.getElementById('hexName').textContent = data.name;
+            document.getElementById('hexNum').textContent = '第 ' + data.hexagram_num + ' 卦';
+
+            const badge = document.getElementById('judgementBadge');
+            badge.textContent = data.judgement;
+            badge.className = 'judgement-badge';
+            if (data.judgement === '大吉') badge.classList.add('daji');
+            else if (data.judgement === '凶') badge.classList.add('xiong');
+            else badge.classList.add('ping');
+
             document.getElementById('upperSymbol').textContent = data.upper_symbol;
             document.getElementById('upperName').textContent = data.upper;
-            document.getElementById('upperNature').textContent = data.upper_nature + ' · ' + data.upper_direction + ' · ' + data.upper_element;
             document.getElementById('lowerSymbol').textContent = data.lower_symbol;
             document.getElementById('lowerName').textContent = data.lower;
-            document.getElementById('lowerNature').textContent = data.lower_nature + ' · ' + data.lower_direction + ' · ' + data.lower_element;
-            document.getElementById('hexagramName').textContent = data.name;
-            document.getElementById('hexagramNum').textContent = '第' + data.hexagram_num + '卦';
-            document.getElementById('meaning').textContent = data.meaning;
 
-            const judgementEl = document.getElementById('judgement');
-            judgementEl.textContent = data.judgement;
-            judgementEl.className = 'judgement';
-            if (data.judgement === '大吉') judgementEl.classList.add('daji');
-            else if (data.judgement === '凶') judgementEl.classList.add('xiong');
-            else judgementEl.classList.add('ping');
+            const upperEl = data.upper_element || '';
+            const lowerEl = data.lower_element || '';
+            const upperColorCls = WUXING_COLOR_CLASS[upperEl] || '';
+            const lowerColorCls = WUXING_COLOR_CLASS[lowerEl] || '';
 
-            const guaciBox = document.getElementById('guaciBox');
-            if (data.guaci) {
-                guaciBox.innerHTML = '<div ' + 'class="guaci-label">卦辞</div><div ' + 'class="guaci-text">' + data.guaci + '</div>';
+            document.getElementById('upperInfo').innerHTML =
+                '<span class="wuxing-dot ' + upperColorCls + '"></span>' + upperEl + ' · ' +
+                (data.upper_nature || '') + ' · ' + (data.upper_direction || '');
+            document.getElementById('lowerInfo').innerHTML =
+                '<span class="wuxing-dot ' + lowerColorCls + '"></span>' + lowerEl + ' · ' +
+                (data.lower_nature || '') + ' · ' + (data.lower_direction || '');
+
+            if (upperEl && lowerEl) {
+                const rel = getWuxingRelation(upperEl, lowerEl);
+                const relEl = document.getElementById('wuxingRelation');
+                relEl.textContent = rel.text;
+                relEl.className = 'wuxing-relation ' + rel.cls;
+                relEl.style.display = '';
             } else {
-                guaciBox.innerHTML = '';
+                document.getElementById('wuxingRelation').style.display = 'none';
             }
 
-            const linesContainer = document.getElementById('hexagramLines');
-            linesContainer.innerHTML = '';
-            data.lines.forEach(line => {
+            const yaoRows = document.getElementById('yaoRows');
+            yaoRows.innerHTML = '';
+            const labels = getYaoLabels(data.lines);
+            for (let i = data.lines.length - 1; i >= 0; i--) {
+                const row = document.createElement('div');
+                row.className = 'yao-row';
+                row.style.animationDelay = (data.lines.length - 1 - i) * 0.1 + 's';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'yao-label';
+                labelSpan.textContent = labels[i];
+
                 const lineDiv = document.createElement('div');
-                lineDiv.className = 'line';
-                const yao = document.createElement('div');
-                yao.className = 'yao ' + (line === 1 ? 'yang' : 'yin');
-                lineDiv.appendChild(yao);
-                linesContainer.appendChild(lineDiv);
-            });
+                lineDiv.className = 'yao-line ' + (data.lines[i] === 1 ? 'yang' : 'yin');
+                lineDiv.style.animationDelay = (data.lines.length - 1 - i) * 0.12 + 's';
 
-            const zhiyaoList = document.getElementById('zhiyaoList');
-            if (data.zhiyao && data.zhiyao.length > 0) {
-                var zhiyaoHtml = '<div ' + 'class="zhiyao-title">爻辞</div>';
-                data.zhiyao.forEach(function(item) {
-                    zhiyaoHtml += '<div ' + 'class="zhiyao-item">' + item + '</div>';
-                });
-                zhiyaoList.innerHTML = zhiyaoHtml;
-            } else {
-                zhiyaoList.innerHTML = '';
+                row.appendChild(labelSpan);
+                row.appendChild(lineDiv);
+                yaoRows.appendChild(row);
             }
 
-            document.getElementById('explanation').textContent = data.explanation;
+            const guaciText = document.getElementById('guaciText');
+            const xiangciText = document.getElementById('xiangciText');
+            guaciText.style.display = data.guaci ? '' : 'none';
+            xiangciText.style.display = data.xiangci ? '' : 'none';
+            if (data.guaci) guaciText.textContent = '「' + data.guaci + '」';
+            if (data.xiangci) xiangciText.textContent = '「' + data.xiangci + '」';
+            document.getElementById('meaningText').textContent = data.meaning || '';
+
+            const yaociList = document.getElementById('yaociList');
+            yaociList.innerHTML = '';
+            const yaociCard = document.getElementById('yaociCard');
+            if (data.zhiyao && data.zhiyao.length > 0) {
+                yaociCard.style.display = '';
+                data.zhiyao.forEach(function(item) {
+                    const div = document.createElement('div');
+                    div.className = 'yaoci-item';
+                    const colonIdx = item.indexOf('：') !== -1 ? item.indexOf('：') : item.indexOf(':');
+                    let pos = '', content = item;
+                    if (colonIdx > 0) {
+                        pos = item.substring(0, colonIdx);
+                        content = item.substring(colonIdx + 1);
+                    }
+                    div.innerHTML = '<span class="yaoci-pos">' + pos + '</span><span class="yaoci-content">' + content + '</span>';
+                    yaociList.appendChild(div);
+                });
+            } else {
+                yaociCard.style.display = 'none';
+            }
+
+            document.getElementById('explanationContent').textContent = data.explanation || '';
+
+            const cards = document.querySelectorAll('.result-card');
+            cards.forEach(function(card, index) {
+                card.classList.remove('visible');
+                void card.offsetWidth;
+                setTimeout(function() {
+                    card.style.transitionDelay = (index * 0.1) + 's';
+                    card.classList.add('visible');
+                }, 50);
+            });
         }
 
         function showError(message) {
@@ -863,6 +1212,8 @@ const INDEX_HTML = `<!DOCTYPE html>
             result.classList.remove('show');
             formCard.style.display = 'block';
             form.reset();
+            const cards = document.querySelectorAll('.result-card');
+            cards.forEach(function(card) { card.classList.remove('visible'); });
         }
 
         form.addEventListener('submit', async (e) => {
@@ -888,7 +1239,7 @@ const INDEX_HTML = `<!DOCTYPE html>
                 showError(err.message || '网络错误，请稍后重试');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = '开始算命';
+                submitBtn.textContent = '开 始 算 命';
             }
         });
     </script>

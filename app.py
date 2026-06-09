@@ -14,14 +14,14 @@ DEEPSEEK_API_KEY = 'REDACTED_DEEPSEEK_KEY'
 DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 BAGUA = {
-    '乾': {'symbol': '☰', 'nature': '天', 'direction': '西北', 'meaning': '刚健、自强不息', 'lines': [1, 1, 1]},
-    '坤': {'symbol': '☷', 'nature': '地', 'direction': '西南', 'meaning': '柔顺、厚德载物', 'lines': [0, 0, 0]},
-    '震': {'symbol': '☳', 'nature': '雷', 'direction': '东', 'meaning': '震动、奋发', 'lines': [1, 0, 0]},
-    '巽': {'symbol': '☴', 'nature': '风', 'direction': '东南', 'meaning': '渗入、谦逊', 'lines': [0, 1, 0]},
-    '坎': {'symbol': '☵', 'nature': '水', 'direction': '北', 'meaning': '险陷、智慧', 'lines': [0, 1, 1]},
-    '离': {'symbol': '☲', 'nature': '火', 'direction': '南', 'meaning': '光明、美丽', 'lines': [1, 0, 1]},
-    '艮': {'symbol': '☶', 'nature': '山', 'direction': '东北', 'meaning': '停止、稳重', 'lines': [1, 1, 0]},
-    '兑': {'symbol': '☱', 'nature': '泽', 'direction': '西', 'meaning': '喜悦、言语', 'lines': [0, 0, 1]},
+    '乾': {'symbol': '☰', 'nature': '天', 'direction': '西北', 'meaning': '刚健、自强不息', 'lines': [1, 1, 1], 'element': '金', 'shu': '1'},
+    '坤': {'symbol': '☷', 'nature': '地', 'direction': '西南', 'meaning': '柔顺、厚德载物', 'lines': [0, 0, 0], 'element': '土', 'shu': '8'},
+    '震': {'symbol': '☳', 'nature': '雷', 'direction': '东', 'meaning': '震动、奋发', 'lines': [1, 0, 0], 'element': '木', 'shu': '4'},
+    '巽': {'symbol': '☴', 'nature': '风', 'direction': '东南', 'meaning': '渗入、谦逊', 'lines': [0, 1, 0], 'element': '木', 'shu': '5'},
+    '坎': {'symbol': '☵', 'nature': '水', 'direction': '北', 'meaning': '险陷、智慧', 'lines': [0, 1, 1], 'element': '水', 'shu': '6'},
+    '离': {'symbol': '☲', 'nature': '火', 'direction': '南', 'meaning': '光明、美丽', 'lines': [1, 0, 1], 'element': '火', 'shu': '3'},
+    '艮': {'symbol': '☶', 'nature': '山', 'direction': '东北', 'meaning': '停止、稳重', 'lines': [1, 1, 0], 'element': '土', 'shu': '7'},
+    '兑': {'symbol': '☱', 'nature': '泽', 'direction': '西', 'meaning': '喜悦、言语', 'lines': [0, 0, 1], 'element': '金', 'shu': '2'},
 }
 
 HEXAGRAMS = {
@@ -56,7 +56,10 @@ def generate_hexagram(user_input):
             'meaning': f'{BAGUA[gua1]["meaning"]}上，{BAGUA[gua2]["meaning"]}下，相辅相成。'
         }
 
+    hexagram_num = str((int(BAGUA[gua1]['shu']) - 1) * 8 + int(BAGUA[gua2]['shu']))
+
     return {
+        'hexagram_num': hexagram_num,
         'upper': gua1,
         'lower': gua2,
         'upper_symbol': BAGUA[gua1]['symbol'],
@@ -65,6 +68,12 @@ def generate_hexagram(user_input):
         'lower_nature': BAGUA[gua2]['nature'],
         'upper_direction': BAGUA[gua1]['direction'],
         'lower_direction': BAGUA[gua2]['direction'],
+        'upper_element': BAGUA[gua1].get('element', ''),
+        'lower_element': BAGUA[gua2].get('element', ''),
+        'pinyin': '',
+        'guaci': '',
+        'xiangci': '',
+        'zhiyao': [],
         'lines': get_hexagram_lines(gua1, gua2),
         **hex_info
     }
