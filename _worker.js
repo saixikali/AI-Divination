@@ -273,7 +273,7 @@ async function handleFortune(request, env){
   let blocks, context;
   if(typeId==='yunshi'){ const out=genYunshi(name,question,zodiac); blocks=out[0]; context=out[1]; }
   else { const out=GENERATORS[typeId](name,question,birth); blocks=out[0]; context=out[1]; }
-  const apiKey=(env&&env.DEEPSEEK_API_KEY)||'REDACTED_DEEPSEEK_KEY';
+  const apiKey=(env&&env.DEEPSEEK_API_KEY)||'';
   const explanation=await callDeepSeek(buildUserPrompt(typeId,context,name,question),apiKey);
   blocks.push({'kind':'ai','title':'✦ 先生解读 ✦','text':explanation});
   return json({'type':typeId,'type_label':TYPE_LABELS[typeId],'name':name,'question':question,'blocks':blocks});
