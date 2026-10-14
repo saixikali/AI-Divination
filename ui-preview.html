@@ -58,7 +58,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             position: relative;
             z-index: 1;
         }
@@ -117,7 +116,7 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         .type-btn {
             text-align: center;
@@ -149,6 +148,49 @@
         }
         .type-btn.active .type-label {
             color: var(--gold);
+        }
+
+        /* ================================================================
+           VIEWS — 五个独立页面，切换动画
+           ================================================================ */
+        .views-wrapper {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: viewEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .view.exiting {
+            animation: viewExit 0.25s ease-in forwards;
+        }
+
+        @keyframes viewEnter {
+            from {
+                opacity: 0;
+                transform: translateX(50px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes viewExit {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-30px) scale(0.98);
+            }
         }
 
         /* ================================================================
@@ -822,18 +864,8 @@
     <!-- ========== TYPE SELECTOR ========== -->
     <div class="type-selector" id="typeSelector"></div>
 
-    <!-- ========== FORM ========== -->
-    <div class="form-card" id="formCard">
-        <div class="form-header">
-            <span class="step-badge" id="stepBadge">请 填 写 信 息</span>
-            <h3 id="formTitle">诚心发问，卦象自明</h3>
-            <p class="type-desc" id="typeDesc"></p>
-        </div>
-        <form id="fortuneForm">
-            <div id="formFields"></div>
-            <button type="submit" class="btn btn-primary" id="submitBtn">☯ 　开 始 占 卜　 ☯</button>
-        </form>
-    </div>
+    <!-- ========== VIEWS ========== -->
+    <div class="views-wrapper" id="viewsWrapper"></div>
 
     <!-- ========== LOADING ========== -->
     <div class="loading" id="loading">
@@ -849,9 +881,6 @@
     <!-- ========== ERROR ========== -->
     <div class="error" id="error"></div>
 
-    <!-- ========== RESULT ========== -->
-    <div class="result" id="result"></div>
-
     <!-- ========== FOOTER ========== -->
     <div class="site-footer">
         <div class="footer-ornament">── ✦ ──</div>
@@ -862,19 +891,16 @@
 </div>
 
 <script>
-    const API_BASE = 'http://localhost:5000';
+    const API_BASE = '';
     const WUXING_COLOR_CLASS = { '金':'metal','木':'wood','水':'water','火':'fire','土':'earth' };
     const CN_NUMS = ['壹','贰','叁','肆','伍'];
 
     let types = [];
-    let currentType = null;
+    let currentViewId = null;
+    let isAnimating = false;
 
-    var form       = document.getElementById('fortuneForm');
-    var formCard   = document.getElementById('formCard');
     var loading    = document.getElementById('loading');
-    var result     = document.getElementById('result');
     var errorEl    = document.getElementById('error');
-    var submitBtn  = document.getElementById('submitBtn');
 
     // ==================== 初始化 ====================
     async function init() {
@@ -882,7 +908,8 @@
             const resp = await fetch(API_BASE + '/api/types');
             types = await resp.json();
             renderTypeSelector();
-            selectType(types[0].id);
+            renderViews();
+            switchView(types[0].id);
         } catch (e) {
             showError('无法连接本地服务，请先运行 python app.py');
         }
@@ -891,49 +918,99 @@
     function renderTypeSelector() {
         const el = document.getElementById('typeSelector');
         el.innerHTML = types.map(t =>
-            '<div class="type-btn" data-id="' + t.id + '" onclick="selectType(\'' + t.id + '\')">' +
+            '<div class="type-btn" data-id="' + t.id + '" onclick="switchView(\'' + t.id + '\')">' +
                 '<span class="type-icon">' + t.icon + '</span>' +
                 '<span class="type-label">' + t.label + '</span>' +
             '</div>'
         ).join('');
     }
 
-    function selectType(typeId) {
-        currentType = types.find(t => t.id === typeId);
-        if (!currentType) return;
+    function renderViews() {
+        const wrapper = document.getElementById('viewsWrapper');
+        wrapper.innerHTML = types.map(t => {
+            const fieldsHtml = t.fields.map((f, i) => {
+                const star = f.required ? '<span class="required-star">*</span>' : '<span class="optional-tag">（可选）</span>';
+                const tag = f.type === 'textarea'
+                    ? '<textarea id="' + t.id + '_' + f.key + '" name="' + f.key + '" placeholder="' + (f.placeholder||'') + '"' + (f.required?' required':'') + '></textarea>'
+                    : '<input type="text" id="' + t.id + '_' + f.key + '" name="' + f.key + '" placeholder="' + (f.placeholder||'') + '"' + (f.required?' required':'') + '>';
+                return '<div class="form-group">' +
+                    '<div class="field-header"><span class="field-num">' + CN_NUMS[i] + '</span><label>' + f.label + star + '</label></div>' +
+                    tag +
+                    (f.hint ? '<div class="field-hint">' + f.hint + '</div>' : '') +
+                '</div>';
+            }).join('');
 
+            return '<div class="view" id="view-' + t.id + '" data-type="' + t.id + '">' +
+                '<div class="form-card">' +
+                    '<div class="form-header">' +
+                        '<span class="step-badge">请 填 写 信 息</span>' +
+                        '<h3>诚心发问，卦象自明</h3>' +
+                        '<p class="type-desc">' + t.desc + '</p>' +
+                    '</div>' +
+                    '<form class="fortune-form" data-type="' + t.id + '">' +
+                        fieldsHtml +
+                        '<button type="submit" class="btn btn-primary">☯ 　开 始 占 卜　 ☯</button>' +
+                    '</form>' +
+                '</div>' +
+                '<div class="result" id="result-' + t.id + '"></div>' +
+            '</div>';
+        }).join('');
+
+        // 绑定表单提交
+        document.querySelectorAll('.fortune-form').forEach(form => {
+            form.addEventListener('submit', handleSubmit);
+        });
+    }
+
+    // ==================== 视图切换 ====================
+    function switchView(typeId) {
+        if (isAnimating || currentViewId === typeId) return;
+
+        const oldView = currentViewId ? document.getElementById('view-' + currentViewId) : null;
+        const newView = document.getElementById('view-' + typeId);
+
+        // 更新按钮状态
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.id === typeId);
         });
 
-        document.getElementById('typeDesc').textContent = currentType.desc;
-        renderForm();
-        hideResult();
-    }
+        if (!oldView) {
+            // 首次加载，直接显示
+            newView.classList.add('active');
+            currentViewId = typeId;
+            return;
+        }
 
-    function renderForm() {
-        const container = document.getElementById('formFields');
-        container.innerHTML = currentType.fields.map((f, i) => {
-            const star = f.required ? '<span class="required-star">*</span>' : '<span class="optional-tag">（可选）</span>';
-            const tag = f.type === 'textarea'
-                ? '<textarea id="field_' + f.key + '" name="' + f.key + '" placeholder="' + (f.placeholder||'') + '"' + (f.required?' required':'') + '></textarea>'
-                : '<input type="text" id="field_' + f.key + '" name="' + f.key + '" placeholder="' + (f.placeholder||'') + '"' + (f.required?' required':'') + '>';
-            return '<div class="form-group">' +
-                '<div class="field-header"><span class="field-num">' + CN_NUMS[i] + '</span><label>' + f.label + star + '</label></div>' +
-                tag +
-                (f.hint ? '<div class="field-hint">' + f.hint + '</div>' : '') +
-            '</div>';
-        }).join('');
+        isAnimating = true;
+
+        // 旧视图退出动画
+        oldView.classList.remove('active');
+        oldView.classList.add('exiting');
+
+        setTimeout(() => {
+            oldView.classList.remove('exiting');
+            oldView.style.display = 'none';
+
+            // 新视图进入动画
+            newView.style.display = '';
+            newView.classList.add('active');
+
+            currentViewId = typeId;
+            isAnimating = false;
+        }, 220);
     }
 
     // ==================== 提交 ====================
-    form.addEventListener('submit', async function(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
-        if (!currentType) return;
+        const form = e.target;
+        const typeId = form.dataset.type;
+        const typeConfig = types.find(t => t.id === typeId);
+        if (!typeConfig) return;
 
-        const payload = { type: currentType.id };
-        currentType.fields.forEach(f => {
-            payload[f.key] = document.getElementById('field_' + f.key).value.trim();
+        const payload = { type: typeId };
+        typeConfig.fields.forEach(f => {
+            payload[f.key] = document.getElementById(typeId + '_' + f.key).value.trim();
         });
 
         showLoading();
@@ -945,31 +1022,36 @@
             });
             const data = await resp.json();
             if (!resp.ok) throw new Error(data.error || '占卜失败');
-            showResult(data);
+            showResult(typeId, data);
         } catch (err) {
             showError(err.message || '网络错误，请检查本地服务是否运行');
         }
-    });
+    }
 
     // ==================== 渲染结果 ====================
-    function showResult(data) {
+    function showResult(typeId, data) {
         loading.classList.remove('show');
-        result.classList.add('show');
-        result.innerHTML = '';
+        const view = document.getElementById('view-' + typeId);
+        const resultEl = document.getElementById('result-' + typeId);
+        const formCard = view.querySelector('.form-card');
+
+        formCard.style.display = 'none';
+        resultEl.classList.add('show');
+        resultEl.innerHTML = '';
 
         data.blocks.forEach(block => {
             const card = createBlockCard(block);
-            if (card) result.appendChild(card);
+            if (card) resultEl.appendChild(card);
         });
 
         const resetBtn = document.createElement('button');
         resetBtn.className = 'btn btn-secondary';
         resetBtn.style.marginBottom = '20px';
         resetBtn.textContent = '再 占 一 次';
-        resetBtn.onclick = resetForm;
-        result.appendChild(resetBtn);
+        resetBtn.onclick = () => resetForm(typeId);
+        resultEl.appendChild(resetBtn);
 
-        animateCards();
+        animateCards(resultEl);
     }
 
     function createBlockCard(block) {
@@ -1089,8 +1171,6 @@
 
     // ==================== 辅助 ====================
     function showLoading() {
-        formCard.style.display = 'none';
-        result.classList.remove('show');
         errorEl.classList.remove('show');
         loading.classList.add('show');
     }
@@ -1099,23 +1179,21 @@
         loading.classList.remove('show');
         errorEl.textContent = message;
         errorEl.classList.add('show');
-        formCard.style.display = '';
     }
 
-    function hideResult() {
-        result.classList.remove('show');
-        formCard.style.display = '';
-    }
+    function resetForm(typeId) {
+        const view = document.getElementById('view-' + typeId);
+        const resultEl = document.getElementById('result-' + typeId);
+        const formCard = view.querySelector('.form-card');
+        const form = view.querySelector('.fortune-form');
 
-    function resetForm() {
-        result.classList.remove('show');
+        resultEl.classList.remove('show');
         formCard.style.display = '';
         form.reset();
-        renderForm();
     }
 
-    function animateCards() {
-        const cards = document.querySelectorAll('.result-card');
+    function animateCards(container) {
+        const cards = container.querySelectorAll('.result-card');
         cards.forEach(function(card, index) {
             card.classList.remove('visible');
             void card.offsetWidth;
