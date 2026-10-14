@@ -8,7 +8,7 @@ import random
 import json
 import hashlib
 from datetime import datetime, date
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
@@ -429,6 +429,10 @@ def sync_call_deepseek(prompt):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/preview')
+def preview():
+    return send_file('ui-preview.html')
 
 @app.route('/api/types', methods=['GET'])
 def types_api():
