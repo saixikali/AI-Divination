@@ -8,9 +8,13 @@ import random
 import json
 import hashlib
 from datetime import datetime, date
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file
+from dotenv import load_dotenv
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# 显式指定 .env 路径，避免 Flask reloader 子进程工作目录变化导致加载失败
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
+
+app = Flask(__name__, static_folder='public', static_url_path='')
 
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
@@ -420,7 +424,8 @@ def sync_call_deepseek(prompt):
         with urllib.request.urlopen(req, timeout=30, context=context) as response:
             result = json.loads(response.read().decode('utf-8'))
             return result['choices'][0]['message']['content']
-    except Exception:
+    except Exception as e:
+        print(f'[DeepSeek API error] {type(e).__name__}: {e}')
         return '（先生今日网络不畅，卦象已为您排好，稍后再来听他细说～）'
 
 # ============================================================================
@@ -428,11 +433,11 @@ def sync_call_deepseek(prompt):
 # ============================================================================
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return send_file('public/index.html')
 
 @app.route('/preview')
 def preview():
-    return send_file('ui-preview.html')
+    return send_file('public/index.html')
 
 @app.route('/api/types', methods=['GET'])
 def types_api():
