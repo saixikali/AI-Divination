@@ -1,6 +1,12 @@
+import LingqianShaker from './LingqianShaker'
+
 const CN_NUMS = ['壹', '贰', '叁', '肆', '伍']
 
 export default function FortuneForm({ typeConfig, onSubmit }) {
+  if (typeConfig.id === 'lingqian') {
+    return <LingqianShaker typeConfig={typeConfig} onSubmit={onSubmit} />
+  }
+
   function handleSubmit(e) {
     e.preventDefault()
     const values = {}
