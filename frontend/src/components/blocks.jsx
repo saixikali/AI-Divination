@@ -106,18 +106,25 @@ function VerseCard({ b }) {
 
 function CardsCard({ b }) {
   return (
-    <div className="result-card">
-      <div className="section-title">◇ 塔 罗 牌 阵 ◇</div>
+    <div className="result-card tarot-spread">
+      <div className="section-title">✦ 塔 罗 牌 阵 ✦</div>
       <div className="cards-container">
         {b.items.map((item, i) => (
-          <div className="tarot-card" key={i}>
-            <div className="card-emoji">{item.emoji}</div>
-            <div className="card-info">
+          <div className="tarot-slot" key={i}>
+            <div className={'tarot-visual' + (item.reversed ? ' reversed' : '')}>
+              <div className="tv-back">
+                <div className="tv-back-pattern">✦</div>
+              </div>
+              <div className="tv-face">
+                <div className="tv-emoji">{item.emoji}</div>
+                <div className="tv-name">{item.name}</div>
+              </div>
+            </div>
+            <div className="tarot-caption">
               <div className="card-pos">
                 {item.pos}
                 {item.reversed && <span className="card-reversed">逆位</span>}
               </div>
-              <div className="card-name">{item.name}</div>
               <div className="card-meaning">{item.meaning}</div>
             </div>
           </div>

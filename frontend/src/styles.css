@@ -694,52 +694,15 @@
             line-height: 2;
         }
 
-        /* ---------- 6. 塔罗牌卡片 ---------- */
+        /* ---------- 6. 塔罗牌卡片（视觉见 themes.css） ---------- */
         .cards-container {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-        .tarot-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.025);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .tarot-card .card-emoji {
-            font-size: 2rem;
-            flex-shrink: 0;
-        }
-        .tarot-card .card-info {
-            flex: 1;
-        }
-        .tarot-card .card-pos {
+        .card-pos {
             font-size: 0.72rem;
-            color: var(--text-muted);
             letter-spacing: 2px;
-            margin-bottom: 2px;
-        }
-        .tarot-card .card-name {
-            font-size: 1.05rem;
-            color: var(--text-primary);
-            letter-spacing: 2px;
-        }
-        .tarot-card .card-meaning {
-            font-size: 0.82rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-            line-height: 1.5;
-        }
-        .tarot-card .card-reversed {
-            font-size: 0.7rem;
-            color: #ef5350;
-            margin-left: 6px;
-            padding: 2px 8px;
-            background: rgba(244, 67, 54, 0.12);
-            border-radius: 8px;
         }
 
         /* ---------- 7. 键值对卡片 ---------- */

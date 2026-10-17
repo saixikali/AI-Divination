@@ -22,6 +22,10 @@ export default function App() {
       .catch(() => setError('无法连接本地服务，请先运行 python app.py'))
   }, [])
 
+  useEffect(() => {
+    document.body.dataset.theme = currentViewId || 'zhouyi'
+  }, [currentViewId])
+
   function switchView(typeId) {
     if (isAnimating || currentViewId === typeId) return
     setIsAnimating(true)
@@ -55,7 +59,7 @@ export default function App() {
   }
 
   return (
-    <div className="container">
+    <div className={'container theme-' + (currentViewId || 'zhouyi')}>
       <SiteHeader />
       <TypeSelector types={types} currentId={currentViewId} onSwitch={switchView} />
 
